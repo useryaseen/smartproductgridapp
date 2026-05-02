@@ -19,15 +19,13 @@ Small Expo (React Native) app that displays and manages products using `https://
 
 ## Approach & decisions
 
-- **Reducer state + history**: `features/products/store.ts` stores products, per-product pending mutations, and undo/redo stacks.
-- **Optimistic edits**: category updates apply immediately, then resolve via a simulated request (`lib/fakeStore.ts`).
+- **Reducer state + history**: `features/products/store.js` stores products, per-product pending mutations, and undo/redo stacks.
+- **Optimistic edits**: category updates apply immediately, then resolve via a simulated request (`lib/fakeStore.js`).
 - **Rapid updates**: each edit gets a `mutationId`; stale responses are ignored so the latest edit wins.
 - **Failures**: failures roll back only if the UI still shows the optimistic category for that mutation.
 - **Incoming updates**: a timer periodically patches `price` / `rating` only (never overwrites `category`).
 
-## Splash / Branding
 
-- Native splash is configured via Expo, and an in-app splash (SP branding) shows briefly on startup.
 
 ## Run locally
 
