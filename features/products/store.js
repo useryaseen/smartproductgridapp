@@ -1,51 +1,4 @@
-import type { Product } from '@/lib/types';
-
-export type LoadStatus = 'idle' | 'loading' | 'ready' | 'error';
-
-export type PendingMutation = {
-  mutationId: string;
-  fromCategory: string;
-  toCategory: string;
-  startedAt: number;
-};
-
-export type HistoryEntry = {
-  productId: number;
-  fromCategory: string;
-  toCategory: string;
-  at: number;
-};
-
-export type ProductsState = {
-  status: LoadStatus;
-  error?: string;
-  productsById: Record<number, Product>;
-  productIds: number[];
-  pendingById: Record<number, PendingMutation | undefined>;
-  undoStack: HistoryEntry[];
-  redoStack: HistoryEntry[];
-};
-
-export type ProductsAction =
-  | { type: 'load_start' }
-  | { type: 'load_success'; products: Product[] }
-  | { type: 'load_error'; message: string }
-  | { type: 'undo_consumed'; entry: HistoryEntry }
-  | { type: 'redo_consumed'; entry: HistoryEntry }
-  | {
-      type: 'category_optimistic';
-      productId: number;
-      mutationId: string;
-      fromCategory: string;
-      toCategory: string;
-      pushHistory: boolean;
-      clearRedo: boolean;
-    }
-  | { type: 'category_commit'; productId: number; mutationId: string }
-  | { type: 'category_fail'; productId: number; mutationId: string; message: string }
-  | { type: 'apply_external_patch'; patches: Array<{ productId: number; patch: Partial<Product> }> };
-
-export const initialProductsState: ProductsState = {
+export const initialProductsState = {
   status: 'idle',
   productsById: {},
   productIds: [],
@@ -54,19 +7,19 @@ export const initialProductsState: ProductsState = {
   redoStack: [],
 };
 
-function setProductCategory(state: ProductsState, productId: number, category: string) {
+function setProductCategory(state, productId, category) {
   const product = state.productsById[productId];
   if (!product) return;
   state.productsById[productId] = { ...product, category };
 }
 
-export function productsReducer(state: ProductsState, action: ProductsAction): ProductsState {
+export function productsReducer(state, action) {
   switch (action.type) {
     case 'load_start':
       return { ...state, status: 'loading', error: undefined };
     case 'load_success': {
-      const byId: Record<number, Product> = {};
-      const ids: number[] = [];
+      const byId = {};
+      const ids = [];
       for (const p of action.products) {
         byId[p.id] = p;
         ids.push(p.id);
@@ -116,7 +69,7 @@ export function productsReducer(state: ProductsState, action: ProductsAction): P
       };
     }
     case 'category_optimistic': {
-      const next: ProductsState = {
+      const next = {
         ...state,
         pendingById: { ...state.pendingById },
         undoStack: state.undoStack.slice(),
@@ -148,7 +101,7 @@ export function productsReducer(state: ProductsState, action: ProductsAction): P
     case 'category_commit': {
       const pending = state.pendingById[action.productId];
       if (!pending || pending.mutationId !== action.mutationId) return state;
-      const next: ProductsState = { ...state, pendingById: { ...state.pendingById } };
+      const next = { ...state, pendingById: { ...state.pendingById } };
       next.pendingById[action.productId] = undefined;
       return next;
     }
@@ -156,7 +109,7 @@ export function productsReducer(state: ProductsState, action: ProductsAction): P
       const pending = state.pendingById[action.productId];
       if (!pending || pending.mutationId !== action.mutationId) return state;
 
-      const next: ProductsState = {
+      const next = {
         ...state,
         pendingById: { ...state.pendingById },
         productsById: { ...state.productsById },
@@ -173,14 +126,12 @@ export function productsReducer(state: ProductsState, action: ProductsAction): P
     }
     case 'apply_external_patch': {
       if (action.patches.length === 0) return state;
-      const next: ProductsState = { ...state, productsById: { ...state.productsById } };
+      const next = { ...state, productsById: { ...state.productsById } };
       for (const { productId, patch } of action.patches) {
         const existing = next.productsById[productId];
         if (!existing) continue;
         // External updates should not overwrite category edits.
-        const { category: _ignoredCategory, ...rest } = patch as Partial<Product> & {
-          category?: string;
-        };
+        const { category: _ignoredCategory, ...rest } = patch ?? {};
         next.productsById[productId] = { ...existing, ...rest };
       }
       return next;

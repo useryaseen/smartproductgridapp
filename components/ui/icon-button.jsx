@@ -11,12 +11,6 @@ export function IconButton({
   disabled,
   accessibilityLabel,
   variant = 'ghost',
-}: {
-  icon: Parameters<typeof IconSymbol>[0]['name'];
-  onPress?: () => void;
-  disabled?: boolean;
-  accessibilityLabel: string;
-  variant?: 'ghost' | 'solid';
 }) {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
@@ -62,4 +56,3 @@ const styles = StyleSheet.create({
     opacity: 0.55,
   },
 });
-

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { Product } from '@/lib/types';
 import { Colors, Fonts } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { Chip } from '@/components/ui/chip';
@@ -12,15 +12,10 @@ export function CategoryModal({
   categories,
   onClose,
   onSelectCategory,
-}: {
-  visible: boolean;
-  product: Product | null;
-  categories: string[];
-  onClose: () => void;
-  onSelectCategory: (category: string) => void;
 }) {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const insets = useSafeAreaInsets();
 
   const title = useMemo(() => product?.title ?? '', [product?.title]);
   const current = product?.category ?? '';
@@ -28,7 +23,7 @@ export function CategoryModal({
   return (
     <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose} />
-      <View style={styles.sheetWrap} pointerEvents="box-none">
+      <View style={[styles.sheetWrap, { paddingBottom: Math.max(14, 10 + insets.bottom) }]} pointerEvents="box-none">
         <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.header, { color: colors.text }]} numberOfLines={2}>
             Update category
@@ -94,4 +89,3 @@ const styles = StyleSheet.create({
   closeText: { fontFamily: Fonts.rounded, fontSize: 14, fontWeight: '800' },
   pressed: { opacity: 0.9 },
 });
-

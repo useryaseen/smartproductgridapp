@@ -1,22 +1,18 @@
 import React, { useEffect, useMemo } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Colors, Fonts } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-
-export type ToastKind = 'success' | 'error' | 'info';
 
 export function Toast({
   message,
   kind = 'info',
   visible,
-}: {
-  message: string;
-  kind?: ToastKind;
-  visible: boolean;
 }) {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const insets = useSafeAreaInsets();
   const opacity = useMemo(() => new Animated.Value(0), []);
 
   useEffect(() => {
@@ -31,7 +27,7 @@ export function Toast({
     kind === 'error' ? colors.danger : kind === 'success' ? colors.success : colors.surface;
 
   return (
-    <Animated.View pointerEvents="none" style={[styles.wrap, { opacity }]}>
+    <Animated.View pointerEvents="none" style={[styles.wrap, { opacity, bottom: 18 + insets.bottom }]}>
       <View style={[styles.card, { backgroundColor: bg, borderColor: colors.border }]}>
         <Text style={[styles.text, { color: kind === 'info' ? colors.text : colors.surface }]}>
           {message}
@@ -46,7 +42,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     right: 16,
-    bottom: 18,
     alignItems: 'center',
   },
   card: {
@@ -67,4 +62,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-

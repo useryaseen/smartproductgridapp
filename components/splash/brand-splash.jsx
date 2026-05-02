@@ -4,7 +4,7 @@ import { Animated, StyleSheet, Text, View } from 'react-native';
 import { Colors, Fonts } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-export function BrandSplash({ visible }: { visible: boolean }) {
+export function BrandSplash({ visible }) {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 

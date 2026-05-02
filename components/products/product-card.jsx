@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 
-import type { Product } from '@/lib/types';
 import { Colors, Fonts } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { formatCurrency, formatRating } from '@/lib/product-utils';
@@ -13,19 +12,11 @@ export function ProductCard({
   viewMode,
   onEditCategory,
   pending,
-}: {
-  product: Product;
-  viewMode: 'grid' | 'list';
-  onEditCategory: (product: Product) => void;
-  pending?: boolean;
 }) {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
 
-  const containerStyle = useMemo(
-    () => (viewMode === 'grid' ? styles.gridCard : styles.listCard),
-    [viewMode]
-  );
+  const containerStyle = useMemo(() => (viewMode === 'grid' ? styles.gridCard : styles.listCard), [viewMode]);
 
   return (
     <Pressable
@@ -38,7 +29,7 @@ export function ProductCard({
         pressed ? styles.pressed : undefined,
       ]}>
       <View style={styles.topRow}>
-        <View style={styles.imageWrap}>
+        <View style={[styles.imageWrap, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
           <Image
             source={{ uri: product.image }}
             style={styles.image}
@@ -47,7 +38,9 @@ export function ProductCard({
           />
         </View>
         <View style={styles.meta}>
-          <Text style={[styles.title, { color: colors.text }]} numberOfLines={viewMode === 'grid' ? 2 : 1}>
+          <Text
+            style={[styles.title, { color: colors.text }]}
+            numberOfLines={viewMode === 'grid' ? 2 : 1}>
             {product.title}
           </Text>
           <Text style={[styles.price, { color: colors.text }]}>{formatCurrency(product.price)}</Text>
@@ -99,7 +92,7 @@ const styles = StyleSheet.create({
     height: 84,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: 'transparent',
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -142,4 +135,3 @@ const styles = StyleSheet.create({
   footerLeft: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   footerText: { fontFamily: Fonts.sans, fontSize: 12, fontWeight: '600' },
 });
-

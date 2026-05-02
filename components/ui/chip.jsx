@@ -9,11 +9,6 @@ export function Chip({
   selected,
   onPress,
   disabled,
-}: {
-  label: string;
-  selected?: boolean;
-  onPress?: () => void;
-  disabled?: boolean;
 }) {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
@@ -60,4 +55,3 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
 });
-

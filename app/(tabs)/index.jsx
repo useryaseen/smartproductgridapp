@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Colors, Fonts } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
@@ -19,31 +20,29 @@ import { Chip } from '@/components/ui/chip';
 import { Toast } from '@/components/ui/toast';
 
 import { fetchProducts, simulateUpdateCategory } from '@/lib/fakeStore';
-import { clamp, SortKey, SortOrder, uniqueCategories } from '@/lib/product-utils';
-import type { Product } from '@/lib/types';
+import { clamp, uniqueCategories } from '@/lib/product-utils';
 import { ProductCard } from '@/components/products/product-card';
 import { CategoryModal } from '@/components/products/category-modal';
 import { initialProductsState, productsReducer } from '@/features/products/store';
 
-type ToastState = { visible: boolean; message: string; kind: 'success' | 'error' | 'info' };
-
 export default function ProductsScreen() {
   const scheme = useColorScheme() ?? 'light';
   const colors = Colors[scheme];
+  const insets = useSafeAreaInsets();
 
   const [state, dispatch] = useReducer(productsReducer, initialProductsState);
 
   const [query, setQuery] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('All');
-  const [sortKey, setSortKey] = useState<SortKey>('price');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [sortKey, setSortKey] = useState('price');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [viewMode, setViewMode] = useState('grid');
 
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const [toast, setToast] = useState<ToastState>({ visible: false, message: '', kind: 'info' });
-  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [toast, setToast] = useState({ visible: false, message: '', kind: 'info' });
+  const toastTimer = useRef(null);
 
   const [showBrandSplash, setShowBrandSplash] = useState(true);
   const brandSplashMin = useRef(true);
@@ -53,7 +52,7 @@ export default function ProductsScreen() {
     stateRef.current = state;
   }, [state]);
 
-  function showToast(message: string, kind: ToastState['kind'] = 'info') {
+  function showToast(message, kind = 'info') {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     setToast({ visible: true, message, kind });
     toastTimer.current = setTimeout(() => setToast((t) => ({ ...t, visible: false })), 2200);
@@ -73,7 +72,7 @@ export default function ProductsScreen() {
     dispatch({ type: 'load_start' });
     fetchProducts(controller.signal)
       .then((products) => dispatch({ type: 'load_success', products }))
-      .catch((e: unknown) => {
+      .catch((e) => {
         const message = e instanceof Error ? e.message : 'Failed to load products';
         dispatch({ type: 'load_error', message });
       });
@@ -110,13 +109,7 @@ export default function ProductsScreen() {
     return sorted;
   }, [categoryFilter, query, sortKey, sortOrder, state.productIds, state.productsById, state.status]);
 
-  function startCategoryUpdate(params: {
-    productId: number;
-    fromCategory: string;
-    toCategory: string;
-    pushHistory: boolean;
-    clearRedo: boolean;
-  }) {
+  function startCategoryUpdate(params) {
     const mutationId = `${params.productId}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
     dispatch({
       type: 'category_optimistic',
@@ -144,12 +137,12 @@ export default function ProductsScreen() {
       });
   }
 
-  function onEditCategory(product: Product) {
+  function onEditCategory(product) {
     setSelectedProduct(product);
     setCategoryModalOpen(true);
   }
 
-  function onSelectCategory(nextCategory: string) {
+  function onSelectCategory(nextCategory) {
     if (!selectedProduct) return;
     if (nextCategory === selectedProduct.category) {
       setCategoryModalOpen(false);
@@ -202,7 +195,7 @@ export default function ProductsScreen() {
       if (current.status !== 'ready' || current.productIds.length === 0) return;
 
       const count = clamp(1 + Math.floor(Math.random() * 3), 1, 3);
-      const patches: { productId: number; patch: Partial<Product> }[] = [];
+      const patches = [];
 
       for (let i = 0; i < count; i++) {
         const id = current.productIds[Math.floor(Math.random() * current.productIds.length)];
@@ -226,7 +219,11 @@ export default function ProductsScreen() {
   }, [state.status]);
 
   const header = (
-    <View style={[styles.header, { backgroundColor: colors.background }]}>
+    <View
+      style={[
+        styles.header,
+        { backgroundColor: colors.background, paddingTop: Math.max(10, insets.top + 6) },
+      ]}>
       <View style={styles.headerTop}>
         <View>
           <Text style={[styles.hTitle, { color: colors.text }]}>Smart Product Grid</Text>
@@ -292,7 +289,7 @@ export default function ProductsScreen() {
   );
 
   return (
-    <View style={[styles.page, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.page, { backgroundColor: colors.background }]} edges={['top']}>
       {header}
 
       {state.status === 'loading' ? (
@@ -311,7 +308,12 @@ export default function ProductsScreen() {
               dispatch({ type: 'load_start' });
               fetchProducts()
                 .then((p) => dispatch({ type: 'load_success', products: p }))
-                .catch((e: unknown) => dispatch({ type: 'load_error', message: e instanceof Error ? e.message : 'Failed to load products' }));
+                .catch((e) =>
+                  dispatch({
+                    type: 'load_error',
+                    message: e instanceof Error ? e.message : 'Failed to load products',
+                  })
+                );
             }}
             style={({ pressed }) => [
               styles.retry,
@@ -329,8 +331,12 @@ export default function ProductsScreen() {
           key={viewMode}
           keyExtractor={(item) => String(item.id)}
           numColumns={viewMode === 'grid' ? 2 : 1}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            { paddingBottom: 24 + insets.bottom + 72 },
+          ]}
           columnWrapperStyle={viewMode === 'grid' ? styles.column : undefined}
+          keyboardShouldPersistTaps="handled"
           renderItem={({ item }) => (
             <ProductCard
               product={item}
@@ -358,13 +364,13 @@ export default function ProductsScreen() {
 
       <Toast visible={toast.visible} kind={toast.kind} message={toast.message} />
       <BrandSplash visible={showBrandSplash} />
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   page: { flex: 1 },
-  header: { paddingTop: 10, paddingHorizontal: 16, paddingBottom: 12, gap: 12 },
+  header: { paddingHorizontal: 16, paddingBottom: 12, gap: 12 },
   headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
   headerActions: { flexDirection: 'row', gap: 8 },
   hTitle: { fontFamily: Fonts.rounded, fontSize: 20, fontWeight: '900' },
