@@ -14,7 +14,6 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
-import { BrandSplash } from "@/components/splash/brand-splash";
 import { Chip } from "@/components/ui/chip";
 import { IconButton } from "@/components/ui/icon-button";
 import { IconSymbol } from "@/components/ui/icon-symbol";
@@ -54,8 +53,6 @@ export default function ProductsScreen() {
   });
   const toastTimer = useRef(null);
 
-  const [showBrandSplash, setShowBrandSplash] = useState(true);
-  const brandSplashMin = useRef(true);
   const stateRef = useRef(state);
 
   useEffect(() => {
@@ -71,25 +68,7 @@ export default function ProductsScreen() {
     );
   }
 
-  useEffect(() => {
-    const minTimer = setTimeout(() => {
-      brandSplashMin.current = false;
-      if (state.status === "ready" || state.status === "error") {
-        setShowBrandSplash(false);
-      }
-    }, 1200);
 
-    // Force hide splash after 3 seconds max
-    const forceHideTimer = setTimeout(() => {
-      setShowBrandSplash(false);
-    }, 3000);
-
-    return () => {
-      clearTimeout(minTimer);
-      clearTimeout(forceHideTimer);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -103,12 +82,6 @@ export default function ProductsScreen() {
       });
     return () => controller.abort();
   }, []);
-
-  useEffect(() => {
-    if (brandSplashMin.current) return;
-    if (state.status === "ready" || state.status === "error")
-      setShowBrandSplash(false);
-  }, [state.status]);
 
   const categories = useMemo(() => {
     if (state.status !== "ready") return [];
@@ -196,18 +169,15 @@ export default function ProductsScreen() {
 
   function onRefetchProducts() {
     dispatch({ type: "load_start" });
-    setShowBrandSplash(true);
     const controller = new AbortController();
     fetchProducts(controller.signal)
       .then((products) => {
         dispatch({ type: "load_success", products });
-        setTimeout(() => setShowBrandSplash(false), 600);
       })
       .catch((e) => {
         const message =
           e instanceof Error ? e.message : "Failed to load products";
         dispatch({ type: "load_error", message });
-        setShowBrandSplash(false);
       });
     return () => controller.abort();
   }
@@ -507,15 +477,14 @@ export default function ProductsScreen() {
         onSelectCategory={onSelectCategory}
       />
 
-      <Toast
-        visible={toast.visible}
-        kind={toast.kind}
-        message={toast.message}
-      />
-      <BrandSplash visible={showBrandSplash} />
-    </SafeAreaView>
-  );
-}
+       <Toast
+         visible={toast.visible}
+         kind={toast.kind}
+         message={toast.message}
+       />
+     </SafeAreaView>
+   );
+ }
 
 const styles = StyleSheet.create({
   page: { flex: 1 },

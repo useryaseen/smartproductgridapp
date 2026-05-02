@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Colors, Fonts } from '@/constants/theme';
@@ -13,9 +13,7 @@ export default function AboutScreen() {
     <SafeAreaView style={[styles.page, { backgroundColor: colors.background }]} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={[styles.hero, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <View style={[styles.logo, { backgroundColor: colors.tint }]}>
-            <Text style={styles.logoText}>SP</Text>
-          </View>
+          <Image source={require('@/assets/images/splogo.png')} style={styles.logo} resizeMode="contain" />
           <Text style={[styles.title, { color: colors.text }]}>Smart Product Grid</Text>
           <Text style={[styles.sub, { color: colors.mutedText }]}>
             Product management demo powered by FakeStoreAPI.
@@ -53,17 +51,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: 64,
-    height: 64,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoText: {
-    color: '#fff',
-    fontFamily: Fonts.rounded,
-    fontSize: 22,
-    fontWeight: '900',
+    width: 100,
+    height: 100,
+    marginBottom: 12,
   },
   title: { marginTop: 12, fontFamily: Fonts.rounded, fontSize: 18, fontWeight: '900' },
   sub: { marginTop: 6, fontFamily: Fonts.sans, fontSize: 13, fontWeight: '600', textAlign: 'center' },
