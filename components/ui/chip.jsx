@@ -1,16 +1,10 @@
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { Colors, Fonts } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Colors, Fonts } from "@/constants/theme";
+import { useColorScheme } from "@/hooks/use-color-scheme";
 
-export function Chip({
-  label,
-  selected,
-  onPress,
-  disabled,
-}) {
-  const scheme = useColorScheme() ?? 'light';
+export function Chip({ label, selected, onPress, disabled }) {
+  const scheme = useColorScheme() ?? "light";
   const colors = Colors[scheme];
 
   const bg = selected ? colors.tint : colors.surface2;
@@ -22,10 +16,14 @@ export function Chip({
       accessibilityRole="button"
       style={({ pressed }) => [
         styles.base,
-        { backgroundColor: bg, borderColor: selected ? 'transparent' : colors.border },
-        (pressed && !disabled) ? styles.pressed : undefined,
+        {
+          backgroundColor: bg,
+          borderColor: selected ? "transparent" : colors.border,
+        },
+        pressed && !disabled ? styles.pressed : undefined,
         disabled ? styles.disabled : undefined,
-      ]}>
+      ]}
+    >
       <View style={styles.inner}>
         <Text style={[styles.text, { color: fg }]} numberOfLines={1}>
           {label}
@@ -38,20 +36,30 @@ export function Chip({
 const styles = StyleSheet.create({
   base: {
     borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
-  inner: { flexDirection: 'row', alignItems: 'center' },
+  inner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   text: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: "700",
     fontFamily: Fonts.rounded,
+    letterSpacing: -0.2,
   },
   pressed: {
-    opacity: 0.9,
+    opacity: 0.85,
+    transform: [{ scale: 0.97 }],
   },
   disabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
 });
